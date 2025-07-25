@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.irurueta.android.testutils.test">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher_test"
+        android:label="android test utils test">
+
+        <activity
+            android:name="com.irurueta.android.testutils.test.ConditionalIgnoreRuleActivity"
+            android:label="ConditionalIgnoreRuleActivity" />
+        <activity
+            android:name="com.irurueta.android.testutils.test.TestHelperActivity"
+            android:label="TestHelperActivity" />
+        <activity
+            android:name="com.irurueta.android.testutils.test.InstrumentationTestHelperActivity"
+            android:label="InstrumentationTestHelperActivity" />
+    </application>
+</manifest>
