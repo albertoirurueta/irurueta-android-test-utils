@@ -66,4 +66,15 @@ class InstrumentationTestHelperTest {
         every { view.bottom }.returns(600)
         InstrumentationTestHelper.doubleTap(view)
     }
+
+    @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
+    @Test
+    fun tap_whenView_runsSuccessfully() {
+        val view = mockk<View>()
+        every { view.left }.returns(0)
+        every { view.right }.returns(600)
+        every { view.top }.returns(0)
+        every { view.bottom }.returns(600)
+        InstrumentationTestHelper.tap(view)
+    }
 }

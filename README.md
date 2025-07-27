@@ -39,14 +39,14 @@ There are three main components:
 Add the following test dependency to your project to une inline functions in unit tests:
 
 ```
-testImplementation 'com.irurueta:irurueta-android-test-utils:1.1.0'
+testImplementation 'com.irurueta:irurueta-android-test-utils:1.2.0'
 ```
 
 Add the following android test dependency to your project to une all utilities in instrumentation 
 tests:
 
 ```
-androidTestImplementation 'com.irurueta:irurueta-android-test-utils:1.1.0'
+androidTestImplementation 'com.irurueta:irurueta-android-test-utils:1.2.0'
 ```
 
 In unit or instrumentation tests, you can use the inline functions to access private methods and

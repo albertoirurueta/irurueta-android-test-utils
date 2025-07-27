@@ -95,4 +95,12 @@ class InstrumentationTestHelperTest {
         // double tap on view
         InstrumentationTestHelper.doubleTap(view)
     }
+
+    @Test
+    fun tap_executesSuccessfully() {
+        val view = this.view ?: return fail()
+
+        // double tap on view
+        InstrumentationTestHelper.tap(view)
+    }
 }

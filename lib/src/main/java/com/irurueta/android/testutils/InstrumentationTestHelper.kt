@@ -213,6 +213,15 @@ object InstrumentationTestHelper {
     }
 
     /**
+     * Generates a tap touch event at the center of provided view.
+     *
+     * @param v view where tap will be made.
+     */
+    fun tap(v: View) {
+        tap((v.left + v.right) / 2, (v.top + v.bottom) / 2)
+    }
+
+    /**
      * Generates a double tap touch event at provided x,y coordinates on the screen.
      * @param x horizontal coordinate.
      * @param y vertical coordinate.
