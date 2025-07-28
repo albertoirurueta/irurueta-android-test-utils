@@ -18,6 +18,7 @@
 
 package com.irurueta.android.testutils
 
+import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredFunctions
 import kotlin.reflect.full.declaredMemberFunctions
@@ -32,13 +33,60 @@ import kotlin.reflect.jvm.javaField
  *
  * @param T the type of the receiver object.
  * @param R the type of the result expected from the private function.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private function to call.
+ * @param args optional arguments to pass to the private function.
+ * @return the result of the private function call as a nullable type, or null if the function does
+ * not exist or returns null.
+ */
+inline fun <reified T : Any, R> callPrivateFuncWithResult(
+    c: KClass<T>,
+    obj: T,
+    name: String,
+    vararg args: Any?
+): R? {
+    return callPrivateFunc(c, obj, name, *args) as? R
+}
+
+/**
+ * Calls any private function with the specified name on the receiver object,
+ * optionally passing arguments, and returns the result as a nullable type.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the result expected from the private function.
  * @param name the name of the private function to call.
  * @param args optional arguments to pass to the private function.
  * @return the result of the private function call as a nullable type, or null if the function does
  * not exist or returns null.
  */
 inline fun <reified T : Any, R> T.callPrivateFuncWithResult(name: String, vararg args: Any?): R? =
-    callPrivateFunc(name, *args) as? R
+    callPrivateFuncWithResult(T::class, this, name, *args)
+
+/**
+ * Calls any private function with the specified name on the receiver object,
+ * optionally passing arguments, and returns the result as a nullable type.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the result expected from the private static function.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private static function to call.
+ * @param args optional arguments to pass to the private function.
+ * @return the result of the private static function call as a nullable type, or null if the
+ * function does not exist or returns null.
+ */
+inline fun <reified T : Any> callPrivateFunc(
+    c: KClass<T>,
+    obj: T,
+    name: String,
+    vararg args: Any?
+): Any? {
+    return c.declaredMemberFunctions
+        .firstOrNull { it.name == name }
+        ?.apply { isAccessible = true }
+        ?.call(obj, *args)
+}
 
 /**
  * Calls any private function not returning a value with the specified name on the receiver object,
@@ -53,6 +101,27 @@ inline fun <reified T : Any> T.callPrivateFunc(name: String, vararg args: Any?):
         .firstOrNull { it.name == name }
         ?.apply { isAccessible = true }
         ?.call(this, *args)
+
+/**
+ * Calls any private static function with the specified name on the receiver object,
+ * optionally passing arguments, and returns the result as a nullable type.
+ * This CANNOT be used for object classes or companion objects.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the result expected from the private static function.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private static function to call.
+ * @param args optional arguments to pass to the private static function.
+ * @return the result of the private static function call as a nullable type, or null if the
+ * function does not exist or returns null.
+ */
+inline fun <reified T : Any, R> callPrivateStaticFuncWithResult(
+    c: KClass<T>,
+    obj: T,
+    name: String,
+    vararg args: Any?
+): R? = callPrivateStaticFunc(c, obj, name, *args) as? R
 
 /**
  * Calls any private static function with the specified name on the receiver object,
@@ -74,6 +143,27 @@ inline fun <reified T : Any, R> T.callPrivateStaticFuncWithResult(
 /**
  * Calls any private static function not returning a value with the specified name on the
  * receiver object, optionally passing arguments.
+ * This CANNOT be used for object classes or companion objects.
+ *
+ * @param T the type of the receiver object.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private static function to call.
+ * @param args optional arguments to pass to the private static function.
+ */
+inline fun <reified T : Any> callPrivateStaticFunc(
+    c: KClass<T>,
+    obj: T,
+    name: String, vararg args: Any?
+): Any? =
+    c.declaredFunctions
+        .firstOrNull { it.name == name }
+        ?.apply { isAccessible = true }
+        ?.call(obj, *args)
+
+/**
+ * Calls any private static function not returning a value with the specified name on the
+ * receiver object, optionally passing arguments.
  * This can be used for object classes or companion objects where static-like behavior is desired.
  *
  * @param T the type of the receiver object.
@@ -91,15 +181,51 @@ inline fun <reified T : Any> T.callPrivateStaticFunc(name: String, vararg args: 
  *
  * @param T the type of the receiver object.
  * @param R the type of the property expected.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private property to retrieve.
+ * @return the value of the private property as a nullable type, or null if the property does not
+ * exist.
+ */
+inline fun <reified T : Any, R> getPrivateProperty(c: KClass<T>, obj: T, name: String): R? =
+    c.memberProperties
+        .firstOrNull { it.name == name }
+        ?.apply { isAccessible = true }
+        ?.get(obj) as? R
+
+/**
+ * Retrieves the value of a private property with the specified name from the receiver object.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the property expected.
  * @param name the name of the private property to retrieve.
  * @return the value of the private property as a nullable type, or null if the property does not
  * exist.
  */
 inline fun <reified T : Any, R> T.getPrivateProperty(name: String): R? =
-    T::class.memberProperties
+    getPrivateProperty(T::class, this, name)
+
+/**
+ * Retrieves the value of a private static property with the specified name from the receiver
+ * object.
+ * This can be used for object classes or companion objects where static-like behavior is desired.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the property expected.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private static property to retrieve.
+ * @return the value of the private static property as a nullable type, or null if the property does
+ * not exist.
+ */
+inline fun <reified T : Any, R> getPrivateStaticProperty(c: KClass<T>, obj: T, name: String): R? =
+    c.declaredMemberProperties
         .firstOrNull { it.name == name }
-        ?.apply { isAccessible = true }
-        ?.get(this) as? R
+        ?.apply {
+            isAccessible = true
+            javaField?.isAccessible = true
+        }
+        ?.javaField?.get(obj) as? R
 
 /**
  * Retrieves the value of a private static property with the specified name from the receiver
@@ -113,13 +239,33 @@ inline fun <reified T : Any, R> T.getPrivateProperty(name: String): R? =
  * not exist.
  */
 inline fun <reified T : Any, R> T.getPrivateStaticProperty(name: String): R? =
-    T::class.declaredMemberProperties
-        .firstOrNull { it.name == name }
-        ?.apply {
-            isAccessible = true
-            javaField?.isAccessible = true
-        }
-        ?.javaField?.get(this) as? R
+    getPrivateStaticProperty(T::class, this, name)
+
+/**
+ * Sets the value of a private property with the specified name on the receiver object.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the value to set.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private property to set.
+ * @param value the value to set for the private property, which can be null.
+ * @throws UnsupportedOperationException if the property is not mutable or does not exist.
+ * @throws IllegalAccessException if the property cannot be accessed.
+ * @throws IllegalArgumentException if the value is not compatible with the property type.
+ * @throws SecurityException if the property cannot be accessed due to security restrictions.
+ */
+inline fun <reified T : Any, R> setPrivateProperty(c: KClass<T>, obj: T, name: String, value: R?) {
+    val property = c.memberProperties.find { it.name == name }
+    if (property is KMutableProperty<*>) {
+        property.isAccessible = true
+        property.setter.call(obj, value)
+    } else {
+        property?.isAccessible = true
+        property?.javaField?.isAccessible = true
+        property?.javaField?.set(obj, value)
+    }
+}
 
 /**
  * Sets the value of a private property with the specified name on the receiver object.
@@ -134,20 +280,42 @@ inline fun <reified T : Any, R> T.getPrivateStaticProperty(name: String): R? =
  * @throws SecurityException if the property cannot be accessed due to security restrictions.
  */
 inline fun <reified T : Any, R> T.setPrivateProperty(name: String, value: R?) {
-    val property = T::class.memberProperties.find { it.name == name }
-    if (property is KMutableProperty<*>) {
-        property.isAccessible = true
-        property.setter.call(this, value)
-    } else {
-        property?.isAccessible = true
-        property?.javaField?.isAccessible = true
-        property?.javaField?.set(this, value)
-    }
+    setPrivateProperty(T::class, this, name, value)
 }
 
 /**
  * Sets the value of a private static property with the specified name on the receiver object.
- * This can be used for object classes or companion objects where static-like behavior is desired.
+ * This CANNOT be used for object classes or companion.
+ * Notice that immutable properties (defined as "val") on object classes cannot be set due to
+ * security reasons, and attempting to do so will throw an `IllegalAccessException`.
+ *
+ * @param T the type of the receiver object.
+ * @param R the type of the value to set.
+ * @param c the class of the receiver object.
+ * @param obj the instance of the receiver object.
+ * @param name the name of the private static property to set.
+ * @param value the value to set for the private static property, which can be null.
+ * @throws UnsupportedOperationException if the property is not mutable or does not exist.
+ * @throws IllegalAccessException if the property cannot be accessed.
+ * @throws IllegalArgumentException if the value is not compatible with the property type.
+ * @throws SecurityException if the property cannot be accessed due to security restrictions.
+ * @throws IllegalAccessException if the property is immutable (defined as "val") and cannot be set.
+ */
+inline fun <reified T : Any, R> setPrivateStaticProperty(
+    c: KClass<T>,
+    obj: T,
+    name: String,
+    value: R?
+) {
+    val property = c.declaredMemberProperties.find { it.name == name }
+    property?.isAccessible = true
+    property?.javaField?.isAccessible = true
+    property?.javaField?.set(obj, value)
+}
+
+/**
+ * Sets the value of a private static property with the specified name on the receiver object.
+ * This CANNOT be used for object classes or companion objects.
  * Notice that immutable properties (defined as "val") on object classes cannot be set due to
  * security reasons, and attempting to do so will throw an `IllegalAccessException`.
  *
@@ -162,8 +330,5 @@ inline fun <reified T : Any, R> T.setPrivateProperty(name: String, value: R?) {
  * @throws IllegalAccessException if the property is immutable (defined as "val") and cannot be set.
  */
 inline fun <reified T : Any, R> T.setPrivateStaticProperty(name: String, value: R?) {
-    val property = T::class.declaredMemberProperties.find { it.name == name }
-    property?.isAccessible = true
-    property?.javaField?.isAccessible = true
-    property?.javaField?.set(this, value)
+    setPrivateStaticProperty(T::class, this, name, value)
 }

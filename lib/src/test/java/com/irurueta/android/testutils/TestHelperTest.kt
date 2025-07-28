@@ -33,7 +33,23 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateFuncWithResult_whenNoParameters_returnsExpectedResult() {
+    fun callPrivateFuncWithResult_whenNoExtensionAndNoParameters_returnsExpectedResult() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+
+        val result: String? = callPrivateFuncWithResult(
+            TestClass::class,
+            testClass,
+            "privateMethodWithoutParametersAndWithResult"
+        )
+        assertEquals(RESULT, result)
+
+        assertTrue(testClass.executed)
+    }
+
+    @Test
+    fun callPrivateFuncWithResult_whenExtensionAndNoParameters_returnsExpectedResult() {
         val testClass = TestClass()
 
         assertFalse(testClass.executed)
@@ -47,7 +63,25 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateFuncWithResult_whenParameter_returnsExpectedResult() {
+    fun callPrivateFuncWithResult_whenNoExtensionAndParameter_returnsExpectedResult() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+        assertNull(testClass.parameter)
+
+        val result: String? = callPrivateFuncWithResult(
+            TestClass::class,
+            testClass,
+            "privateMethodWithParameterAndWithResult", PARAMETER
+        )
+
+        assertEquals(RESULT, result)
+        assertTrue(testClass.executed)
+        assertEquals(PARAMETER, testClass.parameter)
+    }
+
+    @Test
+    fun callPrivateFuncWithResult_whenExtensionAndParameter_returnsExpectedResult() {
         val testClass = TestClass()
 
         assertFalse(testClass.executed)
@@ -63,7 +97,18 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateFunc_whenNoParameters_executesPrivateMethod() {
+    fun callPrivateFunc_whenNoExtensionNoParameters_executesPrivateMethod() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+
+        callPrivateFunc(TestClass::class, testClass, "privateMethodWithoutParameters")
+
+        assertTrue(testClass.executed)
+    }
+
+    @Test
+    fun callPrivateFunc_whenExtensionAndNoParameters_executesPrivateMethod() {
         val testClass = TestClass()
 
         assertFalse(testClass.executed)
@@ -74,7 +119,20 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateFunc_whenParameter_executesPrivateMethod() {
+    fun callPrivateFunc_whenNoExtensionParameter_executesPrivateMethod() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+        assertNull(testClass.parameter)
+
+        callPrivateFunc(TestClass::class, testClass, "privateMethodWithParameter", PARAMETER)
+
+        assertTrue(testClass.executed)
+        assertEquals(PARAMETER, testClass.parameter)
+    }
+
+    @Test
+    fun callPrivateFunc_whenExtensionParameter_executesPrivateMethod() {
         val testClass = TestClass()
 
         assertFalse(testClass.executed)
@@ -87,7 +145,21 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateStaticFuncWithResult_whenNoParameters_returnsExpectedResult() {
+    fun callPrivateStaticFuncWithResult_whenNoExtensionAndNoParameters_returnsExpectedResult() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+
+        val result: String? = callPrivateStaticFuncWithResult(
+            TestClass::class, testClass, "privateMethodWithoutParametersAndWithResult"
+        )
+        assertEquals(RESULT, result)
+
+        assertTrue(testClass.executed)
+    }
+
+    @Test
+    fun callPrivateStaticFuncWithResult_whenExtensionAndNoParameters_returnsExpectedResult() {
         assertFalse(TestObject.executed)
 
         val result: String? = TestObject.callPrivateStaticFuncWithResult(
@@ -99,7 +171,23 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateStaticFuncWithResult_whenParameter_returnsExpectedResult() {
+    fun callPrivateStaticFuncWithResult_whenNoExtensionAndParameter_returnsExpectedResult() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+        assertNull(testClass.parameter)
+
+        val result: String? = callPrivateStaticFuncWithResult(
+            TestClass::class, testClass, "privateMethodWithParameterAndWithResult", PARAMETER
+        )
+
+        assertEquals(RESULT, result)
+        assertTrue(testClass.executed)
+        assertEquals(PARAMETER, testClass.parameter)
+    }
+
+    @Test
+    fun callPrivateStaticFuncWithResult_whenExtensionAndParameter_returnsExpectedResult() {
         assertFalse(TestObject.executed)
         assertNull(TestObject.parameter)
 
@@ -113,7 +201,18 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateStaticFunc_whenNoParameters_executesPrivateMethod() {
+    fun callPrivateStaticFunc_whenNoExtensionAndNoParameters_executesPrivateMethod() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+
+        callPrivateStaticFunc(TestClass::class, testClass, "privateMethodWithoutParameters")
+
+        assertTrue(testClass.executed)
+    }
+
+    @Test
+    fun callPrivateStaticFunc_whenExtensionAndNoParameters_executesPrivateMethod() {
         assertFalse(TestObject.executed)
 
         TestObject.callPrivateStaticFunc("privateMethodWithoutParameters")
@@ -122,7 +221,20 @@ class TestHelperTest {
     }
 
     @Test
-    fun callPrivateStaticFunc_whenParameter_executesPrivateMethod() {
+    fun callPrivateStaticFunc_whenNoExtensionAndParameter_executesPrivateMethod() {
+        val testClass = TestClass()
+
+        assertFalse(testClass.executed)
+        assertNull(testClass.parameter)
+
+        callPrivateStaticFunc(TestClass::class, testClass, "privateMethodWithParameter", PARAMETER)
+
+        assertTrue(testClass.executed)
+        assertEquals(PARAMETER, testClass.parameter)
+    }
+
+    @Test
+    fun callPrivateStaticFunc_whenExtensionAndParameter_executesPrivateMethod() {
         assertFalse(TestObject.executed)
         assertNull(TestObject.parameter)
 
@@ -133,7 +245,15 @@ class TestHelperTest {
     }
 
     @Test
-    fun getPrivateProperty_returnsExpectedValue() {
+    fun getPrivateProperty_whenNoExtension_returnsExpectedValue() {
+        val testClass = TestClass()
+
+        val result: String? = getPrivateProperty(TestClass::class, testClass, "privateProperty")
+        assertEquals(PRIVATE_PROPERTY_VALUE, result)
+    }
+
+    @Test
+    fun getPrivateProperty_whenExtension_returnsExpectedValue() {
         val testClass = TestClass()
 
         val result: String? = testClass.getPrivateProperty("privateProperty")
@@ -141,13 +261,46 @@ class TestHelperTest {
     }
 
     @Test
-    fun getPrivateStaticProperty_returnsExpectedValue() {
+    fun getPrivateStaticProperty_whenNoExtension_returnsExpectedValue() {
+        val testClass = TestClass()
+
+        val result: String? =
+            getPrivateStaticProperty(TestClass::class, testClass, "privateProperty")
+        assertEquals(PRIVATE_PROPERTY_VALUE, result)
+    }
+
+    @Test
+    fun getPrivateStaticProperty_whenExtension_returnsExpectedValue() {
         val result: String? = TestObject.getPrivateStaticProperty("privateProperty")
         assertEquals(PRIVATE_PROPERTY_VALUE, result)
     }
 
     @Test
-    fun setPrivateProperty_whenMutableProperty_updatesProperty() {
+    fun setPrivateProperty_whenNoExtensionAndMutableProperty_updatesProperty() {
+        val testClass = TestClass()
+
+        // check initial value
+        val propertyName = "privateProperty"
+        val result1: String? = getPrivateProperty(TestClass::class, testClass, propertyName)
+        assertEquals(PRIVATE_PROPERTY_VALUE, result1)
+
+        // set value
+        setPrivateProperty(TestClass::class, testClass, propertyName, NEW_PRIVATE_PROPERTY_VALUE)
+
+        // check
+        val result2: String? = getPrivateProperty(TestClass::class, testClass, propertyName)
+        assertEquals(NEW_PRIVATE_PROPERTY_VALUE, result2)
+
+        // set null value
+        setPrivateProperty(TestClass::class, testClass, propertyName, null)
+
+        // check
+        val result3: String? = getPrivateProperty(TestClass::class, testClass, propertyName)
+        assertNull(result3)
+    }
+
+    @Test
+    fun setPrivateProperty_whenExtensionAndMutableProperty_updatesProperty() {
         val testClass = TestClass()
 
         // check initial value
@@ -171,7 +324,36 @@ class TestHelperTest {
     }
 
     @Test
-    fun setPrivateStaticProperty_whenMutableProperty_updatesProperty() {
+    fun setPrivateStaticProperty_whenNoExtensionAndMutableProperty_updatesProperty() {
+        val testClass = TestClass()
+
+        // check initial value
+        val propertyName = "privateProperty"
+        val result1: String? = getPrivateStaticProperty(TestClass::class, testClass, propertyName)
+        assertEquals(PRIVATE_PROPERTY_VALUE, result1)
+
+        // set value
+        setPrivateStaticProperty(
+            TestClass::class,
+            testClass,
+            propertyName,
+            NEW_PRIVATE_PROPERTY_VALUE
+        )
+
+        // check
+        val result2: String? = getPrivateStaticProperty(TestClass::class, testClass, propertyName)
+        assertEquals(NEW_PRIVATE_PROPERTY_VALUE, result2)
+
+        // set null value
+        setPrivateStaticProperty(TestClass::class, testClass, propertyName, null)
+
+        // check
+        val result3: String? = getPrivateStaticProperty(TestClass::class, testClass, propertyName)
+        assertNull(result3)
+    }
+
+    @Test
+    fun setPrivateStaticProperty_whenExtensionAndMutableProperty_updatesProperty() {
         // check initial value
         val propertyName = "privateProperty"
         val result1: String? = TestObject.getPrivateStaticProperty(propertyName)
@@ -193,7 +375,24 @@ class TestHelperTest {
     }
 
     @Test
-    fun setPrivateProperty_whenImmutableProperty_updatesProperty() {
+    fun setPrivateProperty_whenNoExtensionAndImmutableProperty_updatesProperty() {
+        val testClass = TestClass()
+
+        // check initial value
+        val propertyName = "immutableProperty"
+        val result1: String? = getPrivateProperty(TestClass::class, testClass, propertyName)
+        assertEquals(PRIVATE_PROPERTY_VALUE, result1)
+
+        // set value
+        setPrivateProperty(TestClass::class, testClass, propertyName, NEW_PRIVATE_PROPERTY_VALUE)
+
+        // check
+        val result2: String? = getPrivateProperty(TestClass::class, testClass, propertyName)
+        assertEquals(NEW_PRIVATE_PROPERTY_VALUE, result2)
+    }
+
+    @Test
+    fun setPrivateProperty_whenExtensionAndImmutableProperty_updatesProperty() {
         val testClass = TestClass()
 
         // check initial value
@@ -210,7 +409,24 @@ class TestHelperTest {
     }
 
     @Test
-    fun setPrivateStaticProperty_whenImmutableProperty_throwsIllegalAccessException() {
+    fun setPrivateStaticProperty_whenNoExtensionAndImmutableProperty_updatesProperty() {
+        val testClass = TestClass()
+
+        // check initial value
+        val propertyName = "immutableProperty"
+        val result1: String? = getPrivateStaticProperty(TestClass::class, testClass, propertyName)
+        assertEquals(PRIVATE_PROPERTY_VALUE, result1)
+
+        // set value
+        setPrivateStaticProperty(TestClass::class, testClass, propertyName, NEW_PRIVATE_PROPERTY_VALUE)
+
+        // check
+        val result2: String? = getPrivateStaticProperty(TestClass::class, testClass, propertyName)
+        assertEquals(NEW_PRIVATE_PROPERTY_VALUE, result2)
+    }
+
+    @Test
+    fun setPrivateStaticProperty_whenExtensionAndImmutableProperty_throwsIllegalAccessException() {
         // check initial value
         val propertyName = "immutableProperty"
         val result1: String? = TestObject.getPrivateStaticProperty(propertyName)
