@@ -46,7 +46,7 @@ Add the following android test dependency to your project to une all utilities i
 tests:
 
 ```
-androidTestImplementation 'com.irurueta:irurueta-android-test-utils:1.2.0'
+androidTestImplementation 'com.irurueta:irurueta-android-test-utils:1.3.1'
 ```
 
 In unit or instrumentation tests, you can use the inline functions to access private methods and
