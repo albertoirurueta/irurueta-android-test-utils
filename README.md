@@ -39,7 +39,7 @@ There are three main components:
 Add the following test dependency to your project to une inline functions in unit tests:
 
 ```
-testImplementation 'com.irurueta:irurueta-android-test-utils:1.3.1'
+testImplementation 'com.irurueta:irurueta-android-test-utils:1.3.2'
 ```
 
 Add the following android test dependency to your project to une all utilities in instrumentation 

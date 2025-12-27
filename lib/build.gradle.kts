@@ -9,14 +9,14 @@ plugins {
     alias(libs.plugins.publish)
 }
 
-val libraryVersion = "1.3.1"
+val libraryVersion = "1.3.2"
 
 android {
     namespace = "com.irurueta.android.testutils"
     compileSdk = 36
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 26
         testOptions.targetSdk = 36
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
