@@ -1,0 +1,95 @@
+= Gesture helpers
+
+NOTE: This documentation was generated with the assistance of AI. Please report any inaccuracies.
+
+`InstrumentationTestHelper` is a Kotlin `object` that simulates touch gestures in instrumented tests. It builds
+`MotionEvent` sequences and sends them with `Instrumentation.sendPointerSync`, obtained from
+`InstrumentationRegistry.getInstrumentation()`. It therefore only works in instrumented tests (`androidTest`), and
+must be called from the test thread, not from the main (UI) thread: `sendPointerSync` waits for the main thread to
+process each event.
+
+== Functions
+
+[cols="2,3",options="header"]
+|===
+|Function
+|Description
+
+|`tap(v: View)`
+|Sends an `ACTION_DOWN` followed by an `ACTION_UP` at the center of `v`.
+
+|`doubleTap(v: View)`
+|Two taps at the center of `v`, separated by `ViewConfiguration.getDoubleTapTimeout() / 1.5` milliseconds.
+
+|`drag(fromX: Int, fromY: Int, toX: Int, toY: Int, stepSize: Int = 10)`
+|One-finger drag or scroll from `(fromX, fromY)` to `(toX, toY)`: an `ACTION_DOWN`, a series of `ACTION_MOVE`
+events and an `ACTION_UP`, waiting for the app to become idle after each event.
+
+|`pinch(startX1: Int, startY1: Int, startX2: Int, startY2: Int, endX1: Int, endY1: Int, endX2: Int, endY2: Int, durationMillis: Int = 500)`
+|Two-finger gesture: both pointers move linearly from their start to their end positions. Moving them apart zooms
+in, moving them together zooms out.
+|===
+
+=== Coordinates
+
+`drag` and `pinch` take screen coordinates in pixels. Compute them from the view with `getLocationOnScreen`, as the
+library's instrumented tests do.
+
+`tap` and `doubleTap` compute the center as `((v.left + v.right) / 2, (v.top + v.bottom) / 2)`. `left`, `right`,
+`top` and `bottom` are relative to the view's parent, so these helpers hit the view's center only when its parent
+starts at the window's origin. For views nested deeper, prefer an Espresso `click()` or compute the screen position
+yourself.
+
+=== Event timing
+
+* `drag` generates `(|fromX - toX| / stepSize + |fromY - toY| / stepSize) / 2` move events (integer division), so a
+  smaller `stepSize` gives a smoother, slower drag.
+* `pinch` sends `ACTION_DOWN` and `ACTION_POINTER_2_DOWN`, then `durationMillis / 10` `ACTION_MOVE` events whose event
+  times are spaced 10 ms apart, then `ACTION_POINTER_2_UP` and `ACTION_UP`.
+
+== Example
+
+Adapted from the library's `InstrumentationTestHelperTest`:
+
+[source,kotlin]
+----
+import androidx.test.ext.junit.rules.activityScenarioRule
+import com.irurueta.android.testutils.InstrumentationTestHelper
+import org.junit.Rule
+import org.junit.Test
+
+class MyGestureTest {
+
+    @get:Rule
+    val activityScenarioRule = activityScenarioRule<MyActivity>()
+
+    @Test
+    fun gestures() {
+        var view: View? = null
+        activityScenarioRule.scenario.onActivity { activity ->
+            view = activity.findViewById(R.id.my_view)
+        }
+        val v = view!!
+
+        val xy = IntArray(2)
+        v.getLocationOnScreen(xy)
+        val centerX = xy[0] + v.width / 2
+        val centerY = xy[1] + v.height / 2
+
+        // drag from the center up to the top edge of the view
+        InstrumentationTestHelper.drag(centerX, centerY, centerX, xy[1])
+
+        // pinch: move two fingers apart horizontally
+        val distance = v.width / 6
+        InstrumentationTestHelper.pinch(
+            centerX - distance, centerY, centerX + distance, centerY,
+            centerX - 2 * distance, centerY, centerX + 2 * distance, centerY
+        )
+
+        InstrumentationTestHelper.tap(v)
+        InstrumentationTestHelper.doubleTap(v)
+    }
+}
+----
+
+Next: xref:building.adoc[Building, testing and contributing].

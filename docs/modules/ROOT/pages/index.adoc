@@ -1,0 +1,98 @@
+= Irurueta Android Test Utils
+
+NOTE: This documentation was generated with the assistance of AI. Please report any inaccuracies.
+
+*irurueta-android-test-utils* is a small Android library (package `com.irurueta.android.testutils`) with utilities
+that simplify writing unit tests and instrumented tests for Android code written in Kotlin.
+
+It exists to remove three recurring chores from Android test suites:
+
+* reaching private functions and properties of the class under test without changing their visibility,
+* running a test only on an emulator, only on a real device, or only when a custom condition holds,
+* simulating touch gestures (tap, double tap, drag, pinch) from an instrumented test.
+
+== Components
+
+[cols="1,1,3",options="header"]
+|===
+|Component
+|Where it runs
+|Purpose
+
+|xref:test-helper.adoc[Reflection helpers] (`TestHelper.kt`)
+|Unit tests and instrumented tests
+|Top-level inline functions such as `callPrivateFunc`, `getPrivateProperty` and `setPrivateProperty` that call
+private functions and read or write private properties through Kotlin reflection.
+
+|xref:conditional-ignore.adoc[Conditional ignore] (`ConditionalIgnoreRule`)
+|Instrumented tests (JUnit 4)
+|A JUnit 4 `MethodRule` that skips the body of test methods annotated with `@RequiresEmulator`,
+`@RequiresRealDevice` or `@ConditionalIgnore(condition = ...)`.
+
+|xref:instrumentation-test-helper.adoc[Gesture helpers] (`InstrumentationTestHelper`)
+|Instrumented tests
+|An `object` that injects `MotionEvent` sequences through the instrumentation to tap, double tap, drag and pinch.
+|===
+
+== How a conditional ignore is decided
+
+`ConditionalIgnoreRule` inspects each test method before it runs and decides whether to replace it:
+
+[mermaid]
+....
+flowchart TD
+    T["Test method"] --> A{"Annotated with @ConditionalIgnore?"}
+    A -->|yes| C{"condition.isSatisfied?"}
+    A -->|no| E{"Annotated with @RequiresEmulator?"}
+    E -->|yes| R{"Running on a real device?"}
+    E -->|no| D{"Annotated with @RequiresRealDevice?"}
+    D -->|yes| M{"Running on an emulator?"}
+    D -->|no| RUN["Run the test"]
+    C -->|yes| SKIP["Do not run the test body"]
+    C -->|no| RUN
+    R -->|yes| SKIP
+    R -->|no| RUN
+    M -->|yes| SKIP
+    M -->|no| RUN
+....
+
+Whether the device is an emulator is decided by a `RealDeviceEvaluator`, which can be replaced. See
+xref:conditional-ignore.adoc[Conditional ignore] for the details.
+
+== Public API at a glance
+
+[cols="1,3",options="header"]
+|===
+|Type or function
+|Purpose
+
+|`ConditionalIgnoreRule`
+|JUnit 4 `MethodRule` that evaluates the annotations below.
+
+|`ConditionalIgnore`
+|Annotation on a test function: skip it when its `IgnoreCondition` is satisfied.
+
+|`IgnoreCondition`
+|Interface with a single `val isSatisfied: Boolean`.
+
+|`RequiresEmulator` / `RequiresRealDevice`
+|Annotations on a test function: run it only on an emulator / only on a real device.
+
+|`RealDeviceEvaluator`, `DefaultRealDeviceEvaluator`
+|Decide whether tests are running on an emulator or on a real device.
+
+|`callPrivateFunc`, `callPrivateFuncWithResult`, `callPrivateStaticFunc`, `callPrivateStaticFuncWithResult`,
+`getPrivateProperty`, `setPrivateProperty`, `getPrivateStaticProperty`, `setPrivateStaticProperty`
+|Reflection helpers, each available as an extension function and as a function taking a `KClass` and an instance.
+
+|`InstrumentationTestHelper`
+|`tap`, `doubleTap`, `drag` and `pinch` gesture helpers for instrumented tests.
+|===
+
+== Where to go next
+
+* xref:installation.adoc[Installation]: add the dependency to your test source sets.
+* xref:conditional-ignore.adoc[Conditional ignore], xref:test-helper.adoc[Reflection helpers] and
+  xref:instrumentation-test-helper.adoc[Gesture helpers]: how to use each component.
+* xref:building.adoc[Building, testing and contributing]: build the library and this site.
+* xref:reference.adoc[Reference]: API documentation and other links.
