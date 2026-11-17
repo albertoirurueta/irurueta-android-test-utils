@@ -1,0 +1,153 @@
+= Reflection helpers
+
+NOTE: This documentation was generated with the assistance of AI. Please report any inaccuracies.
+
+`TestHelper.kt` declares top-level `inline` functions with `reified` type parameters, in package
+`com.irurueta.android.testutils`, that call private functions and read or write private properties using Kotlin
+reflection (`kotlin-reflect`). They work in local unit tests (JVM or Robolectric) and in instrumented tests.
+
+Each helper comes in two forms:
+
+* an *extension* form called on the object, for example `val value: String? = obj.getPrivateProperty("name")`, which uses the
+  static type of the receiver (`T::class`), and
+* an *explicit* form that takes the class and the instance, for example
+  `getPrivateProperty(MyClass::class, obj, "name")`.
+
+== Calling private functions
+
+[cols="2,3",options="header"]
+|===
+|Function
+|Description
+
+|`T.callPrivateFunc(name: String, vararg args: Any?): Any?` +
+`callPrivateFunc(c: KClass<T>, obj: T, name: String, vararg args: Any?): Any?`
+|Calls the first function named `name` among the class's declared member functions and returns its result, or
+`null` when no such function exists.
+
+|`T.callPrivateFuncWithResult(name: String, vararg args: Any?): R?` +
+`callPrivateFuncWithResult(c: KClass<T>, obj: T, name: String, vararg args: Any?): R?`
+|Same, cast to `R` (`as? R`). Declare the expected type at the call site.
+|===
+
+[source,kotlin]
+----
+class Counter {
+    private var count = 0
+    private fun increment(by: Int) { count += by }
+    private fun describe(): String = "count=$count"
+}
+
+@Test
+fun callsPrivateFunctions() {
+    val counter = Counter()
+
+    counter.callPrivateFunc("increment", 2)
+
+    val description: String? = counter.callPrivateFuncWithResult("describe")
+    assertEquals("count=2", description)
+
+    // explicit form
+    callPrivateFunc(Counter::class, counter, "increment", 3)
+}
+----
+
+Functions are looked up by name only: if a class has several overloads with the same name, the first one found is
+called, so pass arguments that match it.
+
+== Reading and writing private properties
+
+[cols="2,3",options="header"]
+|===
+|Function
+|Description
+
+|`T.getPrivateProperty(name: String): R?` +
+`getPrivateProperty(c: KClass<T>, obj: T, name: String): R?`
+|Returns the value of the member property `name`, or `null` when it does not exist or is not an `R`.
+
+|`T.setPrivateProperty(name: String, value: R?)` +
+`setPrivateProperty(c: KClass<T>, obj: T, name: String, value: R?)`
+|Sets the property. A `var` is set through its setter; for a `val` the backing field is written directly, so even
+immutable properties of class instances can be changed.
+|===
+
+[source,kotlin]
+----
+class Holder {
+    private var text: String? = "initial"
+    private val constant: String = "fixed"
+}
+
+@Test
+fun readsAndWritesPrivateProperties() {
+    val holder = Holder()
+
+    val text: String? = holder.getPrivateProperty("text")
+    assertEquals("initial", text)
+
+    holder.setPrivateProperty("text", "changed")
+    holder.setPrivateProperty("text", null)
+
+    // a private val of an instance is written through its backing field
+    holder.setPrivateProperty("constant", "changed")
+}
+----
+
+== Static-like members (objects and companion objects)
+
+The `*Static*` variants access members of Kotlin `object` declarations and companion objects, whose properties are
+stored in static JVM fields:
+
+[cols="2,3",options="header"]
+|===
+|Function
+|Description
+
+|`T.callPrivateStaticFunc(name: String, vararg args: Any?): Any?` +
+`callPrivateStaticFunc(c: KClass<T>, obj: T, name: String, vararg args: Any?): Any?`
+|Calls the first function named `name` among the class's declared functions, on `obj` (or the receiver).
+
+|`T.callPrivateStaticFuncWithResult(name: String, vararg args: Any?): R?` +
+`callPrivateStaticFuncWithResult(c: KClass<T>, obj: T, name: String, vararg args: Any?): R?`
+|Same, cast to `R`.
+
+|`T.getPrivateStaticProperty(name: String): R?` +
+`getPrivateStaticProperty(c: KClass<T>, obj: T, name: String): R?`
+|Reads the JVM field behind the declared property `name`.
+
+|`T.setPrivateStaticProperty(name: String, value: R?)` +
+`setPrivateStaticProperty(c: KClass<T>, obj: T, name: String, value: R?)`
+|Writes the JVM field behind the declared property `name`.
+|===
+
+[source,kotlin]
+----
+private object Settings {
+    private var mode: String? = "default"
+    private fun reset(): String { mode = "default"; return "reset" }
+}
+
+@Test
+fun accessesObjectMembers() {
+    val mode: String? = Settings.getPrivateStaticProperty("mode")
+    Settings.setPrivateStaticProperty("mode", "custom")
+    val result: String? = Settings.callPrivateStaticFuncWithResult("reset")
+}
+----
+
+A `val` declared in an `object` is backed by a `static final` field and cannot be changed:
+`setPrivateStaticProperty` throws `IllegalAccessException` for it. The explicit forms also work on regular class
+instances, as the library's unit tests show (for example `getPrivateStaticProperty(TestClass::class, testClass,
+"privateProperty")`).
+
+== Things to know
+
+* Type arguments: `R` cannot be inferred from the arguments. Declare the variable type
+  (`val value: String? = obj.getPrivateProperty("name")`) or pass type arguments explicitly.
+* The extension forms use the *static* type of the receiver. If the variable is typed as a supertype, members
+  declared only in the subclass are not found; use the explicit form with the concrete `KClass`.
+* `callPrivateFunc` and `callPrivateFuncWithResult` look in `declaredMemberFunctions`, so they only find functions
+  declared in that exact class, not inherited ones.
+
+Next: xref:instrumentation-test-helper.adoc[Gesture helpers].
