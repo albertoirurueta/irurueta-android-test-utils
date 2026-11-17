@@ -75,13 +75,14 @@ sonar {
         property("sonar.organization", "albertoirurueta-github")
         property("sonar.host.url", "https://sonarcloud.io")
 
-        property("sonar.tests", listOf("src/test/java", "src/androidTest/java"))
+        // sonar.sources / sonar.tests are not set here: with AGP 9 the Sonar plugin resolves the Android source
+        // directories itself and merges them (as absolute paths) into these properties, so overriding them with
+        // relative paths would index every file twice.
         property("sonar.test.inclusions",
             listOf("**/*Test*/**", "src/androidTest/**", "src/test/**"))
         property("sonar.test.exclusions",
             listOf("**/*Test*/**", "src/androidTest/**", "src/test/**"))
         property("sonar.sourceEncoding", "UTF-8")
-        property("sonar.sources", "src/main/java")
         property("sonar.exclusions", "**/*Test*/**,*.json,'**/*test*/**,**/.gradle/**,**/R.class")
 
         val libraries = androidComponents.sdkComponents.sdkDirectory.get().asFile.path +
