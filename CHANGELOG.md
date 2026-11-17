@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-11-17
+
+### Changed
+
+- No library API or behavior changes; the published artifact is functionally the same as 1.3.2.
+- Added an Antora documentation site (published to GitHub Pages together with the Dokka API reference), gitflow CI
+  workflows and this changelog. CI now builds on JDK 21; the library still targets JVM 17 bytecode.
+
 ## [1.3.2] - 2025-12-27
 
 ### Changed
@@ -64,7 +72,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Reflection helpers in `TestHelper.kt` to call private functions (`callPrivateFunc`, `callPrivateFuncWithResult`) and
   read or write private properties (`getPrivateProperty`, `setPrivateProperty`).
 
-[Unreleased]: https://github.com/albertoirurueta/irurueta-android-test-utils/compare/1.3.2...HEAD
+[Unreleased]: https://github.com/albertoirurueta/irurueta-android-test-utils/compare/1.3.3...HEAD
+[1.3.3]: https://github.com/albertoirurueta/irurueta-android-test-utils/compare/1.3.2...1.3.3
 [1.3.2]: https://github.com/albertoirurueta/irurueta-android-test-utils/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/albertoirurueta/irurueta-android-test-utils/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/albertoirurueta/irurueta-android-test-utils/compare/1.2.0...1.3.0

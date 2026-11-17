@@ -27,8 +27,8 @@ tests, and helpers to simulate touch gestures in instrumented tests.
 | --- | --- |
 | Language | Kotlin 2.3.0 (JVM target 17) |
 | Build tool | Gradle 8.14.3 (Kotlin DSL) |
-| Current development version | `1.3.3-SNAPSHOT` |
-| Latest release | `1.3.2` |
+| Current development version | `1.4.0-SNAPSHOT` |
+| Latest release | `1.3.3` |
 | Platform | Android |
 | Min / compile SDK | `minSdk` 26 (Android 8.0) / `compileSdk` 36 |
 | Kotlin / AGP | Kotlin 2.3.0 / Android Gradle Plugin 8.13.2 |
@@ -69,7 +69,7 @@ Latest release:
 
 ```kotlin
 dependencies {
-    testImplementation("com.irurueta:irurueta-android-test-utils:1.3.2")
+    testImplementation("com.irurueta:irurueta-android-test-utils:1.3.3")
 }
 ```
 
@@ -79,7 +79,7 @@ Latest release:
 
 ```kotlin
 dependencies {
-    androidTestImplementation("com.irurueta:irurueta-android-test-utils:1.3.2")
+    androidTestImplementation("com.irurueta:irurueta-android-test-utils:1.3.3")
 }
 ```
 

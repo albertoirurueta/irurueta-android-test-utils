@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.publish)
 }
 
-val libraryVersion = "1.3.3-SNAPSHOT"
+val libraryVersion = "1.3.3"
 
 android {
     namespace = "com.irurueta.android.testutils"

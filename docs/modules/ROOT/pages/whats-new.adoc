@@ -1,0 +1,10 @@
+= What's new
+
+NOTE: This documentation was generated with the assistance of AI. Please report any inaccuracies.
+
+== 1.3.3
+
+* ♻️ No library API or behavior changes; the published artifact is functionally the same as 1.3.2.
+* 📚 New documentation site (this one), published to GitHub Pages together with the Dokka API reference.
+* 🔧 Gitflow CI workflows and a `CHANGELOG.md` were added. CI now builds on JDK 21; the library still targets JVM 17
+  bytecode.
