@@ -1,0 +1,120 @@
+= Building, testing and contributing
+
+NOTE: This documentation was generated with the assistance of AI. Please report any inaccuracies.
+
+== Project layout
+
+[cols="1,3",options="header"]
+|===
+|Path |Contents
+
+|`lib/` |The library (`com.irurueta.android.testutils`), published as `com.irurueta:irurueta-android-test-utils`.
+|`lib/src/main/java/com/irurueta/android/testutils/` |Library sources: `ConditionalIgnoreRule` and its annotations,
+`RealDeviceEvaluator`, `TestHelper.kt` and `InstrumentationTestHelper`.
+|`lib/src/test/` |Local unit tests (JUnit 4, Robolectric and MockK).
+|`lib/src/androidTest/` |Instrumented tests, run on a device or emulator against small test activities
+(`ConditionalIgnoreRuleActivity`, `TestHelperActivity`, `InstrumentationTestHelperActivity`).
+|`docs/` |This Antora documentation site.
+|===
+
+== Requirements
+
+* JDK 21 (the CI workflows build with Temurin 21; the library still targets JVM 17 bytecode).
+* Android SDK with platform 36.
+* For instrumented tests: a connected device or emulator.
+* For the documentation: Node.js 20 or later.
+
+== Building
+
+[source,bash]
+----
+./gradlew :lib:assemble
+----
+
+== Running the tests
+
+[source,bash]
+----
+# Local unit tests
+./gradlew lib:test
+
+# Instrumented tests (needs a device or emulator)
+./gradlew lib:connectedAndroidTest
+----
+
+Unit tests (`ConditionalIgnoreRuleTest`, `DefaultRealDeviceEvaluatorTest`, `InstrumentationTestHelperTest`,
+`TestHelperTest`) live under `lib/src/test/java/com/irurueta/android/testutils/`. The instrumented tests under
+`lib/src/androidTest/` exercise the rule (`ConditionalIgnoreRuleTest`, and `ConditionalIgnoreRule2Test` with a custom
+`RealDeviceEvaluator`), the reflection helpers and the gesture helpers on a real device or emulator. Which
+`@RequiresEmulator`/`@RequiresRealDevice` tests actually run depends on where you run them.
+
+== Coverage
+
+The debug build type enables unit and instrumented test coverage. To convert the unit test execution data into HTML
+and XML reports with the JaCoCo CLI bundled in the repository (as the CI workflow does):
+
+[source,bash]
+----
+java -jar jacoco-0.8.13/lib/jacococli.jar report lib/build/outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec \
+  --classfiles lib/build/tmp/kotlin-classes/debug \
+  --sourcefiles lib/src/main/java \
+  --html lib/build/reports/coverage/test \
+  --xml lib/build/reports/coverage/test/report.xml
+----
+
+== API documentation
+
+The KDoc API reference is generated with Dokka:
+
+[source,bash]
+----
+./gradlew lib:dokkaGenerate
+----
+
+The output is written to `lib/build/dokka/html`.
+
+== Static analysis
+
+The library is analysed on SonarCloud (`./gradlew :lib:sonar`, which needs a `SONAR_TOKEN`). `./gradlew lint` runs
+Android lint.
+
+== Continuous integration
+
+The `CI` GitHub Actions workflow (`.github/workflows/main.yml`) runs on pushes and pull requests to `main`. On an
+API 35 emulator it runs `./gradlew clean test connectedAndroidTest lint lib:dokkaGenerate`, publishes the test
+results, converts the coverage report, sends the analysis to SonarCloud and deploys the Dokka output to GitHub
+Pages. The `publish.yml` workflow publishes the library to Maven Central when a GitHub release is published.
+
+== Building this documentation
+
+From `docs/` (Node.js 20 or later):
+
+[source,bash]
+----
+npm ci
+npx antora antora-playbook.yml
+npx pagefind --site build/site
+npm run test:nav:site
+----
+
+The site is written to `docs/build/site`. Search only works over HTTP, for instance with
+`python3 -m http.server 8090 --directory docs/build/site` and http://localhost:8090.
+
+== Branching
+
+The repository follows a gitflow-style branching model:
+
+* `main` holds the stable, released code; releases are tagged (for example `1.3.2`).
+* `develop` is the integration branch where finished work is merged before a release.
+* Work happens on `feature/...` branches created from `develop` and merged back into it.
+
+== Contributing
+
+. Fork the repository and create a feature branch from `develop`.
+. Keep public API changes documented with KDoc, and update these pages when behavior changes.
+. Add or update unit tests, and instrumented tests when the change involves the rule or the gesture helpers, and
+  make sure `./gradlew lib:test` passes.
+. Open a pull request; the CI workflow must pass.
+
+The project is licensed under the Apache License 2.0 (see `LICENSE`); contributions are accepted under the same
+license.

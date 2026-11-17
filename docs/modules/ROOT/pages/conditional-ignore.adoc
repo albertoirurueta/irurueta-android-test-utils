@@ -1,0 +1,201 @@
+= Conditional ignore
+
+NOTE: This documentation was generated with the assistance of AI. Please report any inaccuracies.
+
+`ConditionalIgnoreRule` is a JUnit 4 `MethodRule` that prevents test methods from running when a condition holds.
+It is typically used in instrumented tests that only make sense on an emulator (for instance, tests that rely on
+emulator-specific hardware) or only on a real device (for instance, tests that need real sensors or a camera).
+
+== Annotations
+
+Each annotation targets test *functions* and is kept at runtime.
+
+[cols="1,3",options="header"]
+|===
+|Annotation
+|Effect when `ConditionalIgnoreRule` is active
+
+|`@RequiresEmulator`
+|The test body is not run when the tests run on a real device.
+
+|`@RequiresRealDevice`
+|The test body is not run when the tests run on an emulator.
+
+|`@ConditionalIgnore(condition = X::class)`
+|An instance of `X` (an `IgnoreCondition`) is created; the test body is not run when `X.isSatisfied` is `true`.
+|===
+
+Only one annotation is evaluated per method, in this order: `@ConditionalIgnore`, then `@RequiresEmulator`, then
+`@RequiresRealDevice`. Combining them on the same method therefore has no extra effect.
+
+== Basic usage
+
+Declare the rule with `@get:Rule` and annotate the test functions:
+
+[source,kotlin]
+----
+import com.irurueta.android.testutils.ConditionalIgnore
+import com.irurueta.android.testutils.ConditionalIgnoreRule
+import com.irurueta.android.testutils.IgnoreCondition
+import com.irurueta.android.testutils.RequiresEmulator
+import com.irurueta.android.testutils.RequiresRealDevice
+import org.junit.Rule
+import org.junit.Test
+
+class MyInstrumentedTest {
+
+    @get:Rule
+    val conditionalIgnoreRule = ConditionalIgnoreRule()
+
+    @RequiresRealDevice
+    @Test
+    fun runsOnlyOnRealDevices() {
+        // skipped on an emulator
+    }
+
+    @RequiresEmulator
+    @Test
+    fun runsOnlyOnEmulators() {
+        // skipped on a real device
+    }
+
+    @ConditionalIgnore(condition = SatisfiedCondition::class)
+    @Test
+    fun neverRuns() {
+        // not executed, because SatisfiedCondition is always satisfied
+    }
+
+    inner class SatisfiedCondition : IgnoreCondition {
+        override val isSatisfied: Boolean
+            get() = true
+    }
+}
+----
+
+== What "ignored" means
+
+When a condition holds, the rule returns a replacement JUnit `Statement` instead of the one it received, so the test
+method body is not executed. Because JUnit 4 applies method rules around the `@Before` and `@After` methods, those
+are not run for that test either.
+
+The replacement statement calls `Assume.assumeTrue("Ignored by <ConditionClassName>", condition.isSatisfied)`.
+Since the condition is satisfied at that point, the assumption passes and JUnit reports the test as *passed*, not as
+skipped; the test simply does nothing. Keep this in mind when reading test reports.
+
+== Custom conditions
+
+Implement `IgnoreCondition`:
+
+[source,kotlin]
+----
+interface IgnoreCondition {
+    val isSatisfied: Boolean
+}
+----
+
+The rule instantiates the condition class with reflection, so it must be declared in one of these ways:
+
+* as a top-level class or a nested (non-`inner`) class, with a constructor without arguments, or
+* as an `inner` class declared inside the test class that uses it; the rule passes the running test instance to its
+  constructor, so the condition can read the test's state.
+
+Otherwise `ConditionalIgnoreRule` throws an `IllegalArgumentException` explaining that the condition class is a
+member class that was not declared inside the test case using it.
+
+[source,kotlin]
+----
+// top-level, reusable from several test classes
+class RunningOnOldApi : IgnoreCondition {
+    override val isSatisfied: Boolean
+        get() = android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU
+}
+
+class MyOtherTest {
+
+    @get:Rule
+    val conditionalIgnoreRule = ConditionalIgnoreRule()
+
+    @ConditionalIgnore(condition = RunningOnOldApi::class)
+    @Test
+    fun usesApi33Features() {
+        // not executed below API 33
+    }
+}
+----
+
+== Emulator detection
+
+`@RequiresEmulator` and `@RequiresRealDevice` delegate to a `RealDeviceEvaluator`:
+
+[source,kotlin]
+----
+interface RealDeviceEvaluator {
+    fun isEmulator(): Boolean
+    fun isRealDevice(): Boolean = !isEmulator()
+}
+----
+
+`ConditionalIgnoreRule(realDeviceEvaluator: RealDeviceEvaluator = DefaultRealDeviceEvaluator())` uses
+`DefaultRealDeviceEvaluator` unless told otherwise. It treats the device as an emulator when `Build.HARDWARE` is
+`goldfish`, `ranchu` or `gce_x86`.
+
+If your emulators or device farm report different values, pass your own evaluator:
+
+[source,kotlin]
+----
+class MyTest {
+
+    @get:Rule
+    val conditionalIgnoreRule = ConditionalIgnoreRule(CustomRealDeviceEvaluator())
+
+    @RequiresRealDevice
+    @Test
+    fun needsRealDevice() {
+        // ...
+    }
+
+    private class CustomRealDeviceEvaluator : RealDeviceEvaluator {
+        override fun isEmulator(): Boolean {
+            val fingerprint: String? = Build.FINGERPRINT
+            val product: String? = Build.PRODUCT
+            return (fingerprint?.startsWith("generic") ?: false)
+                    || (product?.contains("sdk") ?: false)
+                    || (product?.contains("emulator") ?: false)
+        }
+    }
+}
+----
+
+The library's own instrumented test `ConditionalIgnoreRule2Test` uses a longer evaluator of this kind that checks
+`Build.BRAND`, `Build.DEVICE`, `Build.FINGERPRINT`, `Build.HARDWARE`, `Build.MODEL`, `Build.MANUFACTURER` and
+`Build.PRODUCT`.
+
+== Building blocks
+
+The rule exposes the pieces it is built from, which are public:
+
+[cols="1,3",options="header"]
+|===
+|Member
+|Description
+
+|`ConditionalIgnoreRule.NotRunningOnEmulator(realDeviceEvaluator)`
+|`IgnoreCondition` satisfied when `realDeviceEvaluator.isRealDevice()` is `true`. Used for `@RequiresEmulator`.
+
+|`ConditionalIgnoreRule.NotRunningOnRealDevice(realDeviceEvaluator)`
+|`IgnoreCondition` satisfied when `realDeviceEvaluator.isEmulator()` is `true`. Used for `@RequiresRealDevice`.
+
+|`ConditionalIgnoreRule.hasConditionalIgnoreAnnotation(method: FrameworkMethod?)`
+|`true` when the method carries `@ConditionalIgnore`.
+
+|`ConditionalIgnoreRule.hasRequiresEmulatorAnnotation(method: FrameworkMethod?)`
+|`true` when the method carries `@RequiresEmulator`.
+
+|`ConditionalIgnoreRule.hasRequiresRealDeviceAnnotation(method: FrameworkMethod?)`
+|`true` when the method carries `@RequiresRealDevice`.
+
+|`ConditionalIgnoreRule.getIgnoreCondition(target: Any?, method: FrameworkMethod)`
+|Creates the `IgnoreCondition` named by the method's `@ConditionalIgnore` annotation for the given test instance.
+|===
+
+Next: xref:test-helper.adoc[Reflection helpers].

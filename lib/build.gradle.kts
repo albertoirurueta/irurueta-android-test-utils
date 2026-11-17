@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.publish)
 }
 
-val libraryVersion = "1.3.2"
+val libraryVersion = "1.3.3"
 
 android {
     namespace = "com.irurueta.android.testutils"
@@ -50,6 +50,10 @@ android {
         unitTests {
             isIncludeAndroidResources = true
         }
+    }
+    lint {
+        // SARIF report is uploaded to GitHub code scanning by the CI workflows
+        sarifReport = true
     }
     packaging {
         resources {
