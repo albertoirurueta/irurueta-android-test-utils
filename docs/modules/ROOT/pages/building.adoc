@@ -19,7 +19,7 @@ NOTE: This documentation was generated with the assistance of AI. Please report 
 
 == Requirements
 
-* JDK 17 (the library targets JVM 17 and the CI workflow builds with Temurin 17).
+* JDK 21 (the CI workflows build with Temurin 21; the library still targets JVM 17 bytecode).
 * Android SDK with platform 36.
 * For instrumented tests: a connected device or emulator.
 * For the documentation: Node.js 20 or later.
