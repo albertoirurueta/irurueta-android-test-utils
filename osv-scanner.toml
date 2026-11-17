@@ -1,0 +1,9 @@
+# OSV-Scanner configuration (https://google.github.io/osv-scanner/configuration/).
+
+# picomatch ReDoS through single-branch repeated extglobs. picomatch is only pulled in by the Antora
+# documentation toolchain (docs/package-lock.json), which runs on our own playbook globs at build time and is never
+# shipped with the library. No fixed release exists yet (affects <= 4.0.7); re-evaluate by the date below.
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+ignoreUntil = 2027-02-17
+reason = "Docs build-time dependency only (Antora); not shipped and not exposed to untrusted globs. No fixed version yet."
