@@ -1,4 +1,5 @@
 * xref:index.adoc[Overview]
+* xref:whats-new.adoc[What's new]
 * xref:installation.adoc[Installation]
 * xref:conditional-ignore.adoc[Conditional ignore]
 * xref:test-helper.adoc[Reflection helpers]

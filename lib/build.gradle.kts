@@ -3,13 +3,12 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.dokka)
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.publish)
 }
 
-val libraryVersion = "1.3.3-SNAPSHOT"
+val libraryVersion = "1.3.3"
 
 android {
     namespace = "com.irurueta.android.testutils"
@@ -85,12 +84,13 @@ sonar {
         property("sonar.sources", "src/main/java")
         property("sonar.exclusions", "**/*Test*/**,*.json,'**/*test*/**,**/.gradle/**,**/R.class")
 
-        val libraries = project.android.sdkDirectory.path + "/platforms/android-36/android.jar"
+        val libraries = androidComponents.sdkComponents.sdkDirectory.get().asFile.path +
+            "/platforms/android-36/android.jar"
         property("sonar.libraries", libraries)
         property("sonar.java.libraries", libraries)
         property("sonar.java.test.libraries", libraries)
-        property("sonar.binaries", "build/intermediates/javac/debug/classes,build/tmp/kotlin-classes/debug")
-        property("sonar.java.binaries", "build/intermediates/javac/debug/classes,build/tmp/kotlin-classes/debug")
+        property("sonar.binaries", "build/intermediates/javac/debug/classes,build/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
+        property("sonar.java.binaries", "build/intermediates/javac/debug/classes,build/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
 
         property("sonar.coverage.jacoco.xmlReportPaths",
             listOf("build/reports/coverage/androidTest/debug/connected/report.xml",
